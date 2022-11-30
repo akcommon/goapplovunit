@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.content.ContextCompat
 import com.applovin.mediation.MaxAd
 import com.applovin.mediation.MaxError
 import com.applovin.mediation.nativeAds.MaxNativeAdListener
@@ -48,11 +49,11 @@ fun Activity.requestNative(
                 val adBody = adView.findViewById<AppCompatTextView>(R.id.ad_body)
 
                 btn.setBackgroundResource(color[0])
-                btn.setTextColor(color[1])
+                btn.setTextColor(ContextCompat.getColor(this, color[1]))
 
-                adHeadline.setTextColor(color[2])
+                adHeadline.setTextColor(ContextCompat.getColor(this, color[2]))
 
-                adBody.setTextColor(color[3])
+                adBody.setTextColor(ContextCompat.getColor(this, color[3]))
 
                 populateUnifiedNativeAdViewLarge(nativeAd, adView)
                 layout?.removeAllViews()
@@ -171,7 +172,10 @@ fun Activity.requestNativeApplovin(
 
         override fun onNativeAdLoadFailed(p0: String?, p1: MaxError?) {
             super.onNativeAdLoadFailed(p0, p1)
-            callBack.invoke(null,"error code =${p1?.code} message=${p1?.message} mediatedNetworkErrorCode=${p1?.mediatedNetworkErrorCode}  mediatedNetworkErrorMessage=${p1?.mediatedNetworkErrorMessage}")
+            callBack.invoke(
+                null,
+                "error code =${p1?.code} message=${p1?.message} mediatedNetworkErrorCode=${p1?.mediatedNetworkErrorCode}  mediatedNetworkErrorMessage=${p1?.mediatedNetworkErrorMessage}"
+            )
         }
 
         override fun onNativeAdClicked(p0: MaxAd?) {

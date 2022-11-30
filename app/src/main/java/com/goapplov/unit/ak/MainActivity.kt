@@ -12,18 +12,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val adsContainer: LinearLayout = findViewById(R.id.adsContainer)
-        val listColor = intArrayOf(R.color.black, R.color.black, R.color.black, R.color.black)
+        val listColor = intArrayOf(R.color.white, R.color.black, R.color.white, R.color.white)
 
-        /*requestNative(color = listColor, idNative) { layout, status ->
-            if (layout != null && status == ON_AD_LOADED) {
-                if (adsContainer.childCount > 0) adsContainer.removeAllViews()
-                adsContainer.addView(layout)
-            } else {
-                Log.e("MainActivity ", status)
-            }
-        }*/
-
-        requestNativeApplovin("id") { layout, status ->
+        requestNative(color = listColor, idNative) { layout, status ->
             if (layout != null && status == ON_AD_LOADED) {
                 if (adsContainer.childCount > 0) adsContainer.removeAllViews()
                 adsContainer.addView(layout)
@@ -31,6 +22,15 @@ class MainActivity : AppCompatActivity() {
                 Log.e("MainActivity ", status)
             }
         }
+
+       /* requestNativeApplovin("id") { layout, status ->
+            if (layout != null && status == ON_AD_LOADED) {
+                if (adsContainer.childCount > 0) adsContainer.removeAllViews()
+                adsContainer.addView(layout)
+            } else {
+                Log.e("MainActivity ", status)
+            }
+        }*/
 
     }
 }
