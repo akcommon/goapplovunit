@@ -2,7 +2,6 @@ package com.goapplovunit
 
 import android.app.Activity
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
 import android.widget.*
 import androidx.appcompat.widget.AppCompatButton
@@ -13,47 +12,70 @@ import com.applovin.mediation.nativeAds.MaxNativeAdListener
 import com.applovin.mediation.nativeAds.MaxNativeAdLoader
 import com.applovin.mediation.nativeAds.MaxNativeAdView
 import com.google.android.gms.ads.*
-import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.VideoController.VideoLifecycleCallbacks
 import com.google.android.gms.ads.nativead.MediaView
 import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdView
 
+
 fun Activity.requestNative(
-    placement: String, btnColor: Int,
-    btnTxtColor: Int, layout: LinearLayout, callBack: (status: String) -> Unit
+    vararg color: Int,
+    placement: String,
+    callBack: (layout: LinearLayout?, status: String) -> Unit
 ) {
-    AdLoader.Builder(
-        this,
-        placement
-    )
-        .forNativeAd { nativeAd ->
-            val adView = layoutInflater
-                .inflate(R.layout.ad_unified_large, null) as NativeAdView
+    if (color.size == 4) {
+        var layout: LinearLayout? = null
 
-            val btn = adView.findViewById<AppCompatButton>(R.id.ad_call_to_action)
-            btn.setBackgroundResource(btnColor)
-            btn.setTextColor(btnTxtColor)
+        AdLoader.Builder(
+            this,
+            placement
+        )
+            .forNativeAd { nativeAd ->
 
-            populateUnifiedNativeAdViewLarge(nativeAd, adView)
-            layout.removeAllViews()
-            layout.addView(adView)
-            adView.bringToFront()
-            layout.invalidate()
-        }
-        .withAdListener(object : AdListener() {
-            override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                super.onAdFailedToLoad(loadAdError)
-                callBack.invoke(loadAdError.toString())
+                layout = LinearLayout(this)
+                layout?.layoutParams =
+                    LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    )
+                layout?.orientation = LinearLayout.VERTICAL
+
+                val adView = layoutInflater
+                    .inflate(R.layout.ad_unified_large, null) as NativeAdView
+
+                val btn = adView.findViewById<AppCompatButton>(R.id.ad_call_to_action)
+                val adHeadline = adView.findViewById<AppCompatTextView>(R.id.ad_headline)
+                val adBody = adView.findViewById<AppCompatTextView>(R.id.ad_body)
+
+                btn.setBackgroundResource(color[0])
+                btn.setTextColor(color[1])
+
+                adHeadline.setTextColor(color[2])
+
+                adBody.setTextColor(color[3])
+
+                populateUnifiedNativeAdViewLarge(nativeAd, adView)
+                layout?.removeAllViews()
+                layout?.addView(adView)
+                adView.bringToFront()
+                layout?.invalidate()
             }
+            .withAdListener(object : AdListener() {
+                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                    super.onAdFailedToLoad(loadAdError)
+                    callBack.invoke(null, loadAdError.toString())
+                }
 
-            override fun onAdLoaded() {
-                super.onAdLoaded()
-                callBack.invoke(ON_AD_LOADED)
-            }
-        })
-        .build()
-        .loadAd(AdRequest.Builder().build())
+                override fun onAdLoaded() {
+                    super.onAdLoaded()
+                    callBack.invoke(layout, ON_AD_LOADED)
+                }
+            })
+            .build()
+            .loadAd(AdRequest.Builder().build())
+    } else {
+        callBack.invoke(null, "Color array must be size 4")
+    }
 }
 
 private fun populateUnifiedNativeAdViewLarge(nativeAd: NativeAd, adView: NativeAdView) {
@@ -120,30 +142,36 @@ private fun populateUnifiedNativeAdViewLarge(nativeAd: NativeAd, adView: NativeA
 
 fun Activity.requestNativeApplovin(
     id: String,
-    layout: LinearLayout,
-    callBack: (status: String) -> Unit
+    callBack: (layout: LinearLayout?, status: String) -> Unit
 ) {
     val nativeAdLoader = MaxNativeAdLoader(id, this)
     var loadedNativeAd: MaxAd? = null
     nativeAdLoader.setNativeAdListener(object : MaxNativeAdListener() {
         override fun onNativeAdLoaded(p0: MaxNativeAdView?, p1: MaxAd?) {
             super.onNativeAdLoaded(p0, p1)
+            val layout = LinearLayout(this@requestNativeApplovin)
+            layout.layoutParams =
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+            layout.orientation = LinearLayout.VERTICAL
             if (loadedNativeAd != null) {
                 nativeAdLoader.destroy(loadedNativeAd)
             }
             loadedNativeAd = p1
-            if (layout.childCount > 0) try {
+            /*if (layout.childCount > 0) try {
                 layout.removeAllViews()
             } catch (e: Exception) {
                 Log.e("Exception", "Exception", e)
-            }
+            }*/
             layout.addView(p0)
-            callBack.invoke(ON_AD_LOADED)
+            callBack.invoke(layout, ON_AD_LOADED)
         }
 
         override fun onNativeAdLoadFailed(p0: String?, p1: MaxError?) {
             super.onNativeAdLoadFailed(p0, p1)
-            callBack.invoke("error code =${p1?.code} message=${p1?.message} mediatedNetworkErrorCode=${p1?.mediatedNetworkErrorCode}  mediatedNetworkErrorMessage=${p1?.mediatedNetworkErrorMessage}")
+            callBack.invoke(null,"error code =${p1?.code} message=${p1?.message} mediatedNetworkErrorCode=${p1?.mediatedNetworkErrorCode}  mediatedNetworkErrorMessage=${p1?.mediatedNetworkErrorMessage}")
         }
 
         override fun onNativeAdClicked(p0: MaxAd?) {
