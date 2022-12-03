@@ -96,6 +96,7 @@ fun Activity.showAppOpen(callBack: () -> Unit) {
             }
 
             override fun onAdHidden(ad: MaxAd?) {
+                applovineAppOpenAd = null
                 callBack.invoke()
             }
 
