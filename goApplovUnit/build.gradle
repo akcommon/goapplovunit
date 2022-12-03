@@ -58,7 +58,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.akcommon'
                 artifactId = 'goapplovunit'
-                version = 'beta-0.0.4'
+                version = '0.0.1'
             }
         }
     }
