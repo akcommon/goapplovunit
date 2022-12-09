@@ -2,7 +2,6 @@ package com.goapplovunit
 
 import android.app.Activity
 import android.content.Context
-import android.util.Log
 import com.applovin.mediation.MaxAd
 import com.applovin.mediation.MaxAdListener
 import com.applovin.mediation.MaxError
@@ -12,38 +11,65 @@ import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 
 
-private var mInterstitialAd = arrayOfNulls<InterstitialAd?>(2)
-private var applovineInterstitialAd = arrayOfNulls<MaxInterstitialAd?>(2)
+private var mInterstitialAd = arrayOfNulls<InterstitialAd?>(3)
+private var applovinInterstitialAd = arrayOfNulls<MaxInterstitialAd?>(3)
 
-fun Context.request(placement: String, isExitAds: Boolean, callBack: (status: String) -> Unit) {
+fun Context.requestSplash(placement: String, callBack: (status: String) -> Unit) {
     InterstitialAd.load(
         this,
         placement,
         AdRequest.Builder().build(),
         object : InterstitialAdLoadCallback() {
             override fun onAdFailedToLoad(adError: LoadAdError) {
-                if (isExitAds)
-                    mInterstitialAd[1] = null
-                else
-                    mInterstitialAd[0] = null
+                mInterstitialAd[0] = null
                 callBack.invoke(adError.toString())
             }
 
             override fun onAdLoaded(interstitialAd: InterstitialAd) {
-                if (isExitAds)
-                    mInterstitialAd[1] = interstitialAd
-                else
-                    mInterstitialAd[0] = interstitialAd
+                mInterstitialAd[0] = interstitialAd
+            }
+        })
+}
+
+fun Context.request(placement: String, callBack: (status: String) -> Unit) {
+    InterstitialAd.load(
+        this,
+        placement,
+        AdRequest.Builder().build(),
+        object : InterstitialAdLoadCallback() {
+            override fun onAdFailedToLoad(adError: LoadAdError) {
+                mInterstitialAd[1] = null
+                callBack.invoke(adError.toString())
+            }
+
+            override fun onAdLoaded(interstitialAd: InterstitialAd) {
+                mInterstitialAd[1] = interstitialAd
+            }
+        })
+}
+
+fun Context.requestExit(placement: String, callBack: (status: String) -> Unit) {
+    InterstitialAd.load(
+        this,
+        placement,
+        AdRequest.Builder().build(),
+        object : InterstitialAdLoadCallback() {
+            override fun onAdFailedToLoad(adError: LoadAdError) {
+                mInterstitialAd[2] = null
+                callBack.invoke(adError.toString())
+            }
+
+            override fun onAdLoaded(interstitialAd: InterstitialAd) {
+                mInterstitialAd[2] = interstitialAd
             }
         })
 }
 
 
-fun Activity.requestApplovine(id: String, isExitAds: Boolean, callBack: (status: String) -> Unit) {
-    if ((if (isExitAds) applovineInterstitialAd[1] == null else applovineInterstitialAd[0] == null)) {
-        if (isExitAds) applovineInterstitialAd[1] = MaxInterstitialAd(id, this)
-        else applovineInterstitialAd[0] = MaxInterstitialAd(id, this)
-        if (isExitAds) applovineInterstitialAd[1]?.setListener(
+fun Activity.requestApplovinSplash(placement: String, callBack: (status: String) -> Unit) {
+    if ((applovinInterstitialAd[0] == null)) {
+        applovinInterstitialAd[0] = MaxInterstitialAd(placement, this)
+        applovinInterstitialAd[0]?.setListener(
             object : MaxAdListener {
                 override fun onAdLoaded(ad: MaxAd?) {
 
@@ -62,7 +88,7 @@ fun Activity.requestApplovine(id: String, isExitAds: Boolean, callBack: (status:
                 }
 
                 override fun onAdLoadFailed(adUnitId: String?, error: MaxError?) {
-                    applovineInterstitialAd[1] = null
+                    applovinInterstitialAd[0] = null
                     callBack.invoke("error code =${error?.code} message=${error?.message} mediatedNetworkErrorCode=${error?.mediatedNetworkErrorCode}  mediatedNetworkErrorMessage=${error?.mediatedNetworkErrorMessage}")
                 }
 
@@ -70,7 +96,15 @@ fun Activity.requestApplovine(id: String, isExitAds: Boolean, callBack: (status:
 
                 }
             })
-        else applovineInterstitialAd[0]?.setListener(
+        applovinInterstitialAd[0]?.loadAd()
+    }
+
+}
+
+fun Activity.requestApplovin(placement: String, callBack: (status: String) -> Unit) {
+    if ((applovinInterstitialAd[1] == null)) {
+        applovinInterstitialAd[1] = MaxInterstitialAd(placement, this)
+        applovinInterstitialAd[1]?.setListener(
             object : MaxAdListener {
                 override fun onAdLoaded(ad: MaxAd?) {
 
@@ -89,7 +123,7 @@ fun Activity.requestApplovine(id: String, isExitAds: Boolean, callBack: (status:
                 }
 
                 override fun onAdLoadFailed(adUnitId: String?, error: MaxError?) {
-                    applovineInterstitialAd[0] = null
+                    applovinInterstitialAd[1] = null
                     callBack.invoke("error code =${error?.code} message=${error?.message} mediatedNetworkErrorCode=${error?.mediatedNetworkErrorCode}  mediatedNetworkErrorMessage=${error?.mediatedNetworkErrorMessage}")
                 }
 
@@ -97,26 +131,64 @@ fun Activity.requestApplovine(id: String, isExitAds: Boolean, callBack: (status:
 
                 }
             })
+        applovinInterstitialAd[1]?.loadAd()
+    }
 
-        if (isExitAds) applovineInterstitialAd[1]?.loadAd() else applovineInterstitialAd[0]?.loadAd()
+}
+
+fun Activity.requestApplovinExit(placement: String, callBack: (status: String) -> Unit) {
+    if ((applovinInterstitialAd[2] == null)) {
+        applovinInterstitialAd[2] = MaxInterstitialAd(placement, this)
+        applovinInterstitialAd[2]?.setListener(
+            object : MaxAdListener {
+                override fun onAdLoaded(ad: MaxAd?) {
+
+                }
+
+                override fun onAdDisplayed(ad: MaxAd?) {
+
+                }
+
+                override fun onAdHidden(ad: MaxAd?) {
+
+                }
+
+                override fun onAdClicked(ad: MaxAd?) {
+
+                }
+
+                override fun onAdLoadFailed(adUnitId: String?, error: MaxError?) {
+                    applovinInterstitialAd[2] = null
+                    callBack.invoke("error code =${error?.code} message=${error?.message} mediatedNetworkErrorCode=${error?.mediatedNetworkErrorCode}  mediatedNetworkErrorMessage=${error?.mediatedNetworkErrorMessage}")
+                }
+
+                override fun onAdDisplayFailed(ad: MaxAd?, error: MaxError?) {
+
+                }
+            })
+        applovinInterstitialAd[2]?.loadAd()
     }
 
 }
 
 
-fun isExitLoaded(): Boolean {
-    return mInterstitialAd[1] != null || (applovineInterstitialAd[1] != null && applovineInterstitialAd[1]?.isReady == true)
+fun isSplashLoaded(): Boolean {
+    return mInterstitialAd[0] != null || (applovinInterstitialAd[0] != null && applovinInterstitialAd[0]?.isReady == true)
 }
 
 fun isLoaded(): Boolean {
-    return mInterstitialAd[0] != null || (applovineInterstitialAd[0] != null && applovineInterstitialAd[0]?.isReady == true)
+    return mInterstitialAd[1] != null || (applovinInterstitialAd[1] != null && applovinInterstitialAd[1]?.isReady == true)
+}
+
+fun isExitLoaded(): Boolean {
+    return mInterstitialAd[2] != null || (applovinInterstitialAd[2] != null && applovinInterstitialAd[2]?.isReady == true)
 }
 
 
-fun Activity.showExit(callBack: () -> Unit) {
-    if (applovineInterstitialAd[1] != null && applovineInterstitialAd[1]?.isReady == true) {
-        applovineInterstitialAd[1]?.showAd()
-        applovineInterstitialAd[1]?.setListener(object : MaxAdListener {
+fun Activity.showSplash(callBack: () -> Unit) {
+    if (applovinInterstitialAd[0] != null && applovinInterstitialAd[0]?.isReady == true) {
+        applovinInterstitialAd[0]?.showAd()
+        applovinInterstitialAd[0]?.setListener(object : MaxAdListener {
             override fun onAdLoaded(ad: MaxAd?) {
 
             }
@@ -126,7 +198,7 @@ fun Activity.showExit(callBack: () -> Unit) {
             }
 
             override fun onAdHidden(ad: MaxAd?) {
-                applovineInterstitialAd[1] = null
+                applovinInterstitialAd[0] = null
                 callBack.invoke()
             }
 
@@ -142,7 +214,56 @@ fun Activity.showExit(callBack: () -> Unit) {
 
             }
         })
-    } else if (isLoaded()) {
+    } else if (mInterstitialAd[0] != null) {
+        mInterstitialAd[0]?.show(this)
+        mInterstitialAd[0]?.fullScreenContentCallback = object : FullScreenContentCallback() {
+
+            override fun onAdDismissedFullScreenContent() {
+                mInterstitialAd[0] = null
+                callBack.invoke()
+            }
+
+            override fun onAdFailedToShowFullScreenContent(p0: AdError) {
+                super.onAdFailedToShowFullScreenContent(p0)
+                mInterstitialAd[0] = null
+                callBack.invoke()
+            }
+        }
+    } else {
+        callBack.invoke()
+    }
+}
+
+fun Activity.show(callBack: () -> Unit) {
+    if (applovinInterstitialAd[1] != null && applovinInterstitialAd[1]?.isReady == true) {
+        applovinInterstitialAd[1]?.showAd()
+        applovinInterstitialAd[1]?.setListener(object : MaxAdListener {
+            override fun onAdLoaded(ad: MaxAd?) {
+
+            }
+
+            override fun onAdDisplayed(ad: MaxAd?) {
+
+            }
+
+            override fun onAdHidden(ad: MaxAd?) {
+                applovinInterstitialAd[1] = null
+                callBack.invoke()
+            }
+
+            override fun onAdClicked(ad: MaxAd?) {
+
+            }
+
+            override fun onAdLoadFailed(adUnitId: String?, error: MaxError?) {
+
+            }
+
+            override fun onAdDisplayFailed(ad: MaxAd?, error: MaxError?) {
+
+            }
+        })
+    } else if (mInterstitialAd[1] != null) {
         mInterstitialAd[1]?.show(this)
         mInterstitialAd[1]?.fullScreenContentCallback = object : FullScreenContentCallback() {
 
@@ -162,10 +283,10 @@ fun Activity.showExit(callBack: () -> Unit) {
     }
 }
 
-fun Activity.show(placementKey: String, callBack: () -> Unit) {
-    if (applovineInterstitialAd[0] != null && applovineInterstitialAd[0]?.isReady == true) {
-        applovineInterstitialAd[0]?.showAd()
-        applovineInterstitialAd[0]?.setListener(object : MaxAdListener {
+fun Activity.showExit(callBack: () -> Unit) {
+    if (applovinInterstitialAd[2] != null && applovinInterstitialAd[2]?.isReady == true) {
+        applovinInterstitialAd[2]?.showAd()
+        applovinInterstitialAd[2]?.setListener(object : MaxAdListener {
             override fun onAdLoaded(ad: MaxAd?) {
 
             }
@@ -175,7 +296,7 @@ fun Activity.show(placementKey: String, callBack: () -> Unit) {
             }
 
             override fun onAdHidden(ad: MaxAd?) {
-                applovineInterstitialAd[0] = null
+                applovinInterstitialAd[2] = null
                 callBack.invoke()
             }
 
@@ -191,18 +312,18 @@ fun Activity.show(placementKey: String, callBack: () -> Unit) {
 
             }
         })
-    } else if (isLoaded()) {
-        mInterstitialAd[0]?.show(this)
-        mInterstitialAd[0]?.fullScreenContentCallback = object : FullScreenContentCallback() {
+    } else if (mInterstitialAd[2] != null) {
+        mInterstitialAd[2]?.show(this)
+        mInterstitialAd[2]?.fullScreenContentCallback = object : FullScreenContentCallback() {
 
             override fun onAdDismissedFullScreenContent() {
-                mInterstitialAd[0] = null
+                mInterstitialAd[2] = null
                 callBack.invoke()
             }
 
             override fun onAdFailedToShowFullScreenContent(p0: AdError) {
                 super.onAdFailedToShowFullScreenContent(p0)
-                mInterstitialAd[0] = null
+                mInterstitialAd[2] = null
                 callBack.invoke()
             }
         }
